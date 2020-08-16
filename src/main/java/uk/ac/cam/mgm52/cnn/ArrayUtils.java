@@ -3,6 +3,8 @@ package uk.ac.cam.mgm52.cnn;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -59,13 +61,13 @@ public final class ArrayUtils {
 
         double[] result = new double[max.length];
 
-        //Apply function
+        // Apply function
         for (int i = 0; i < min.length; i++) {
             //This cast from Integer -> int may be introducing overhead, I don't think it's significant though.
             result[i] = op.apply(arr[i], arr2[i]);
         }
 
-        //Account for array length discrepancy
+        // Account for array length discrepancy
         for (int i = min.length; i < max.length; i++) {
             result[i] = max[i];
         }
@@ -126,7 +128,11 @@ public final class ArrayUtils {
     }
 
     public static int findIndex(double[] arr, double val) {
-        for (int i = 0; i < arr.length; i++) if (arr[i] == val) return i;
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] == val) {
+                return i;
+            }
+        }
         return -1;
     }
 
@@ -134,28 +140,51 @@ public final class ArrayUtils {
         double max = arr[0];
         int maxi = 0;
 
-        for (int i = 1; i < arr.length; i++)
+        for (int i = 1; i < arr.length; i++) {
             if (arr[i] > max) {
                 max = arr[i];
                 maxi = i;
             }
+        }
 
         return maxi;
     }
 
     public static int product(int[] arr) {
-        return Arrays.stream(arr).reduce(1, (i, j) -> i * j);
+        int product = 1;
+        for (double v : arr) {
+            product *= v;
+        }
+        return product;
     }
 
     public static double sum(double[] arr) {
-        return Arrays.stream(arr).reduce(0, Double::sum);
+        double sum = 0d;
+        for (double v : arr) {
+            sum += v;
+        }
+        return sum;
     }
 
-    public static int[] randomOrderInts(int min, int max) {
-        List<Integer> ints = IntStream.range(min, max + 1).boxed().collect(Collectors.toList());
-        Collections.shuffle(ints);
-
-        return ints.stream().mapToInt(i -> i).toArray();
+    public static int[] newIndexArray(int count) {
+        int[] arr = new int[count - 1];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = i;
+        }
+        return arr;
     }
 
+    // Implementing Fisher–Yates shuffle
+    public static void shuffleArray(int[] arr) {
+        // If running on Java 6 or older, use `new Random()` on RHS here
+        Random rnd = ThreadLocalRandom.current();
+        for (int i = arr.length - 1; i > 0; i--) {
+            int index = rnd.nextInt(i + 1);
+            if (index == i) continue;
+            // Simple swap
+            int a = arr[index];
+            arr[index] = arr[i];
+            arr[i] = a;
+        }
+    }
 }

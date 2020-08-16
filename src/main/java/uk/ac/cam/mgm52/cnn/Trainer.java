@@ -2,26 +2,29 @@ package uk.ac.cam.mgm52.cnn;
 
 import java.util.Random;
 
+import static uk.ac.cam.mgm52.cnn.ArrayUtils.newIndexArray;
+import static uk.ac.cam.mgm52.cnn.ArrayUtils.shuffleArray;
+
 /**
  * Given a set of layers, a set of input data, and a set of expected output data, this trains a network.
  */
 public class Trainer {
 
-    Network network;
+    final Network network;
 
     double learningRate;
 
-    private LossFunction lossFun;
+    private final LossFunction lossFun;
 
-    private Tensor[] inputs;
-    private Tensor[] labels;
+    private final Tensor[] inputs;
+    private final Tensor[] labels;
 
     private int epochCount = 0;
-
     private int talkInterval = 500;
 
-    private Random rand = new Random();
+    private final int[] trainOrder;
 
+    private final Random rand = new Random();
 
     Trainer(Network network, LossFunction lossFun, Tensor[] inputs, Tensor[] labels, int talkInterval, double learningRate) {
         this.network = network;
@@ -30,6 +33,8 @@ public class Trainer {
         this.labels = labels;
         this.talkInterval = talkInterval;
         this.learningRate = learningRate;
+
+        this.trainOrder = newIndexArray(inputs.length);
     }
 
     /**
@@ -42,8 +47,8 @@ public class Trainer {
 
         say("BEGINNING EPOCH " + epochCount);
 
-        //The order in which the trainer reads inputs/labels in this epoch. Randomized.
-        int[] trainOrder = ArrayUtils.randomOrderInts(0, inputs.length - 1);
+        // Randomize the order in which the trainer reads inputs/labels in this epoch
+        shuffleArray(trainOrder);
 
         for (int i = 0; i < trainOrder.length; i++) {
             int j = trainOrder[i];
