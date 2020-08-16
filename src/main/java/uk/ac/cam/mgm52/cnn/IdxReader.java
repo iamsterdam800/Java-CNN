@@ -4,10 +4,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-/**Reads IDX files*/
+/**
+ * Reads IDX files
+ */
 public class IdxReader {
 
-    private IdxReader(){}
+    private IdxReader() {
+    }
 
     //Adapted from Radek Mackowiak's method https://stackoverflow.com/a/20383900
     public static Tensor[] readGreyImages(String path, int limit) throws IOException {
@@ -17,25 +20,27 @@ public class IdxReader {
 
         int magicNumberImages = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
         int numberOfImages = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
-        int numberOfRows  = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
+        int numberOfRows = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
         int numberOfColumns = (inImage.read() << 24) | (inImage.read() << 16) | (inImage.read() << 8) | (inImage.read());
 
         int numberOfPixels = numberOfRows * numberOfColumns;
 
         Tensor[] images = new Tensor[limit];
 
-        for(int i = 0; i < limit; i++) {
+        for (int i = 0; i < limit; i++) {
 
             double[] imgPixels = new double[numberOfPixels];
 
-            if(i % 100 == 0) {System.out.println("Number of images extracted: " + i);}
+            if (i % 100 == 0) {
+                System.out.println("Number of images extracted: " + i);
+            }
 
-            for(int p = 0; p < numberOfPixels; p++) {
-                double grey = (128 - inImage.read())/255.0;
+            for (int p = 0; p < numberOfPixels; p++) {
+                double grey = (128 - inImage.read()) / 255.0;
                 imgPixels[p] = grey;
             }
 
-            images[i] = new Tensor(new int[] {numberOfColumns, numberOfRows}, imgPixels);
+            images[i] = new Tensor(new int[]{numberOfColumns, numberOfRows}, imgPixels);
         }
 
         return images;
@@ -49,31 +54,31 @@ public class IdxReader {
 
         int[] labels = new int[limit];
 
-        for(int i = 0; i < limit; i++) {
-           labels[i] = inLabel.read();
-       }
+        for (int i = 0; i < limit; i++) {
+            labels[i] = inLabel.read();
+        }
 
         return labels;
     }
 
-    public static Tensor[] labelsToTensors(int[] labels){
+    public static Tensor[] labelsToTensors(int[] labels) {
         //Determine unique labels
         ArrayList<Integer> uniqueLabels = new ArrayList<>();
         Tensor[] labelsTensors = new Tensor[labels.length];
 
-        for(int l : labels){
-            if(!uniqueLabels.contains(l)) uniqueLabels.add(l);
+        for (int l : labels) {
+            if (!uniqueLabels.contains(l)) uniqueLabels.add(l);
         }
 
         uniqueLabels.sort(Integer::compareTo);
 
-        for(int i = 0; i < labelsTensors.length; i++){
+        for (int i = 0; i < labelsTensors.length; i++) {
             double[] vals = new double[uniqueLabels.size()];
 
             int labelID = uniqueLabels.indexOf(labels[i]);
             vals[labelID] = 1.0;
 
-            labelsTensors[i] = new Tensor(new int[] {uniqueLabels.size()}, vals);
+            labelsTensors[i] = new Tensor(new int[]{uniqueLabels.size()}, vals);
         }
 
         return labelsTensors;

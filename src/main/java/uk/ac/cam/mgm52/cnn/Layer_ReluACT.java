@@ -6,15 +6,15 @@ public class Layer_ReluACT implements Layer {
 
     int[] outputDims;
 
-    public Layer_ReluACT(int[] inputDims){
+    public Layer_ReluACT(int[] inputDims) {
         outputDims = inputDims;
     }
 
     //How much these inputs will affect the result of softmax output
-    public Tensor derivatives(Tensor input){
+    public Tensor derivatives(Tensor input) {
         Tensor output = input.zeroes();
 
-        for(int i = 0; i < input.values.length; i++){
+        for (int i = 0; i < input.values.length; i++) {
             output.values[i] = input.values[i] > 0 ? 1 : 0;
         }
 
@@ -27,7 +27,7 @@ public class Layer_ReluACT implements Layer {
         recentInput = input;
         Tensor output = input.zeroes();
 
-        for(int i = 0; i < input.values.length; i++){
+        for (int i = 0; i < input.values.length; i++) {
             output.values[i] = Math.max(input.values[i], 0);
         }
 

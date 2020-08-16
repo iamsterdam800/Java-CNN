@@ -17,13 +17,15 @@ public class Layer_Convolutional implements Layer {
 
     Tensor recentInput;
 
-    /**Set up layer.
+    /**
+     * Set up layer.
+     *
      * @param filterDimSizes Size of each filter
-     * @param depth Number of filters
+     * @param depth          Number of filters
      */
-    public Layer_Convolutional(int[] filterDimSizes, int depth, int[] inputDims){
+    public Layer_Convolutional(int[] filterDimSizes, int depth, int[] inputDims) {
         //Set up a single tensor that represents all filters
-        while(filterDimSizes.length < inputDims.length) filterDimSizes = ArrayUtils.appendValue(filterDimSizes, 1);
+        while (filterDimSizes.length < inputDims.length) filterDimSizes = ArrayUtils.appendValue(filterDimSizes, 1);
         this.filterDimSizes = filterDimSizes;
 
         //Calculate the size of the cross correlation map resultant from applying a given filter
@@ -38,10 +40,12 @@ public class Layer_Convolutional implements Layer {
         outputDims = ArrayUtils.appendValue(ccMapSize, depth);
     }
 
-    /**Generate cross-correlation map of a filter applied to a tensor.
+    /**
+     * Generate cross-correlation map of a filter applied to a tensor.
+     *
      * @param ccMapSize The expected size of the output. This is taken as a parameter to avoid recomputing it at each iteration.
-     * */
-    public static Tensor crossCorrelationMap(Tensor base, Tensor filter, int[] ccMapSize, int[] padding){
+     */
+    public static Tensor crossCorrelationMap(Tensor base, Tensor filter, int[] ccMapSize, int[] padding) {
         double[] ccMapValues = new double[ArrayUtils.product(ccMapSize)];
 
 
@@ -49,18 +53,16 @@ public class Layer_Convolutional implements Layer {
         ArrayList<Tensor.ValuesIterator> regions = new ArrayList<>();
         base.new RegionsIteratorIterator(filter.dimSizes, padding).forEachRemaining(regions::add);
 
-        if(ccMapValues.length != regions.size()){
+        if (ccMapValues.length != regions.size()) {
             System.out.println("hey");
         }
 
-        IntStream.range(0, ccMapValues.length).parallel().forEach( i ->
+        IntStream.range(0, ccMapValues.length).parallel().forEach(i ->
                 ccMapValues[i] = regions.get(i).innerProduct(filter)
         );
 
         return new Tensor(ccMapSize, ccMapValues);
     }
-
-
 
 
     @Override
@@ -97,7 +99,7 @@ public class Layer_Convolutional implements Layer {
         Tensor.RegionsIterator j = filters.new RegionsIterator(filterDimSizes, new int[0]);
 
 
-        while ( i.hasNext() && j.hasNext()) {
+        while (i.hasNext() && j.hasNext()) {
             Tensor outputLayer = i.next();
             Tensor filterLayer = j.next();
 
@@ -131,10 +133,10 @@ public class Layer_Convolutional implements Layer {
             Tensor f = i.next();
             int[] pixels = new int[f.values.length];
 
-            for(int p = 0; p < pixels.length; p++) {
+            for (int p = 0; p < pixels.length; p++) {
                 int gray = 255 - (int) (f.values[p] * 255);
 
-                pixels[p] = 0xFF000000 | (gray<<16) | (gray<<8) | gray;
+                pixels[p] = 0xFF000000 | (gray << 16) | (gray << 8) | gray;
             }
 
             BufferedImage image = new BufferedImage(f.dimSizes[0], f.dimSizes[0], BufferedImage.TYPE_INT_ARGB);

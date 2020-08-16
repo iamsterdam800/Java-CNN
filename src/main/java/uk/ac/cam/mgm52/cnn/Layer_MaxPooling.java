@@ -1,6 +1,6 @@
 package uk.ac.cam.mgm52.cnn;
 
-public class Layer_MaxPooling implements Layer{
+public class Layer_MaxPooling implements Layer {
 
     int[] strides;
     int[] sizes;
@@ -12,18 +12,18 @@ public class Layer_MaxPooling implements Layer{
     //Indices of each max value. Used in backprop later.
     int[] maxIndices;
 
-    public Layer_MaxPooling(int[] strides, int[] sizes, int[] expectedInputDims){
-        while(strides.length < expectedInputDims.length) strides = ArrayUtils.appendValue(strides, 1);
+    public Layer_MaxPooling(int[] strides, int[] sizes, int[] expectedInputDims) {
+        while (strides.length < expectedInputDims.length) strides = ArrayUtils.appendValue(strides, 1);
         this.strides = strides;
 
-        while(sizes.length < expectedInputDims.length) sizes = ArrayUtils.appendValue(sizes, 1);
+        while (sizes.length < expectedInputDims.length) sizes = ArrayUtils.appendValue(sizes, 1);
         this.sizes = sizes;
 
         inputTensor = new Tensor(expectedInputDims);
 
         int[] outputDims = new int[expectedInputDims.length];
-        for(int i = 0; i < outputDims.length; i ++){
-                outputDims[i] = (int) Math.ceil((expectedInputDims[i] - sizes[i] + 1)/(double)strides[i]);
+        for (int i = 0; i < outputDims.length; i++) {
+            outputDims[i] = (int) Math.ceil((expectedInputDims[i] - sizes[i] + 1) / (double) strides[i]);
         }
         outputTensor = new Tensor(outputDims);
 
@@ -37,8 +37,8 @@ public class Layer_MaxPooling implements Layer{
             Tensor nextRegion = i.next();
             int maxIndex = nextRegion.maxValueIndex();
 
-            maxIndices[i.coordIterator.getCurrentCount()-1] = maxIndex;
-            outputTensor.values[i.coordIterator.getCurrentCount()-1] = nextRegion.values[maxIndex];
+            maxIndices[i.coordIterator.getCurrentCount() - 1] = maxIndex;
+            outputTensor.values[i.coordIterator.getCurrentCount() - 1] = nextRegion.values[maxIndex];
         }
 
         return outputTensor;
@@ -53,7 +53,7 @@ public class Layer_MaxPooling implements Layer{
         for (Tensor.RegionsIterator i = inputGrads.new RegionsIterator(sizes, new int[0], strides); i.hasNext(); ) {
             i.next();
 
-            int maxIndex = maxIndices[i.coordIterator.getCurrentCount()-1];
+            int maxIndex = maxIndices[i.coordIterator.getCurrentCount() - 1];
 
             //Coords of max, relative to region start
             int[] maxCoords = HornerConversion.hornerToCoords(maxIndex, sizes);

@@ -1,10 +1,16 @@
 package uk.ac.cam.mgm52.cnn;
 
+import org.apache.commons.lang3.time.StopWatch;
+
 import java.io.IOException;
+import java.time.Duration;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
+        StopWatch watchTotal = new StopWatch();
+        watchTotal.start();
+
         //Using the MNIST dataset, which has 60,000 labelled 28x28 greyscale images. This example is just reading the first 10000.
         int[] labels = IdxReader.readLabels("resources/mnist/train-labels-idx1-ubyte", 10000);
         Tensor[] labelTensors = IdxReader.labelsToTensors(labels);
@@ -12,18 +18,27 @@ public class Main {
 
         Network testNet = new Network(28, 28);
 
-        testNet.addConv(new int[] {3, 3}, 8)
-                .addMax(2, new int[] {2, 2})
+        testNet.addConv(new int[]{3, 3}, 8)
+                .addMax(2, new int[]{2, 2})
                 .addFull(10)
                 .addSoftmax();
 
-        Trainer testTrain = new Trainer(testNet, LossFunction.crossEntropy, imageTensors, labelTensors, 100,0.005);
+        Trainer testTrain = new Trainer(testNet, LossFunction.crossEntropy, imageTensors, labelTensors, 100, 0.005);
 
+        StopWatch watchTrain = new StopWatch();
+        watchTrain.start();
         //Perform 12 epochs, decreasing learning rate so as to eventually focus on more subtle features in the dataset.
-        for(int i = 0; i < 12; i++) {
+        for (int i = 0; i < 12; i++) {
+            StopWatch watchEpoch = new StopWatch();
+            watchEpoch.start();
+
             testTrain.epoch();
             testTrain.learningRate *= 0.82;
+
+            watchEpoch.stop();
+            System.err.println("Time elapsed training EPOCH" + (i + 1) + ": " + Duration.ofMillis(watchEpoch.getTime()).toString());
         }
+        watchTrain.stop();
 
         //Save filters as images
         ((Layer_Convolutional) testNet.layers[0]).saveFilterImages();
@@ -34,10 +49,14 @@ public class Main {
         Tensor[] tenklabelTensors = IdxReader.labelsToTensors(tenklabels);
         Tensor[] tenkimageTensors = IdxReader.readGreyImages("resources/mnist/t10k-images-idx3-ubyte", 10000);
 
-        Trainer tenktestTrain = new Trainer(testTrain.network, LossFunction.crossEntropy, tenkimageTensors, tenklabelTensors, 10000,0);
+        Trainer tenktestTrain = new Trainer(testTrain.network, LossFunction.crossEntropy, tenkimageTensors, tenklabelTensors, 10000, 0);
 
         //Learning rate is 0, so no actual training is being done here; network is testing itself.
         tenktestTrain.epoch();
+
+        watchTotal.stop();
+        System.err.println("Time elapsed training: " + Duration.ofMillis(watchTrain.getTime()).toString());
+        System.err.println("Time elapsed total: " + Duration.ofMillis(watchTotal.getTime()).toString());
 
     }
 

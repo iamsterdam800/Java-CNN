@@ -12,11 +12,11 @@ public class Layer_FullyConnected implements Layer {
     double[] recentOutput;
     Tensor recentInput;
 
-    public Layer_FullyConnected(int outputLength, int[] inputDimSizes){
+    public Layer_FullyConnected(int outputLength, int[] inputDimSizes) {
         expectedInputSizes = inputDimSizes;
         recentInput = new Tensor(inputDimSizes);
         recentOutput = new double[outputLength];
-        outputDims = new int[] {outputLength};
+        outputDims = new int[]{outputLength};
 
         weights = new Tensor(ArrayUtils.appendValue(inputDimSizes, outputLength));
 
@@ -32,12 +32,12 @@ public class Layer_FullyConnected implements Layer {
         recentInput = input;
         Tensor.RegionsIterator i = weights.new RegionsIterator(expectedInputSizes, new int[0]);
 
-        while(i.hasNext()){
+        while (i.hasNext()) {
             recentOutput[i.coordIterator.getCurrentCount()] = i.next().innerProduct(input);
         }
 
         recentOutput = ArrayUtils.addAll(recentOutput, biases);
-        return new Tensor(new int[] {recentOutput.length}, recentOutput);
+        return new Tensor(new int[]{recentOutput.length}, recentOutput);
     }
 
 
@@ -48,7 +48,7 @@ public class Layer_FullyConnected implements Layer {
 
         //derivative of loss wrt weights = input * deriv wrt bias output
         Tensor weightGrad = null;
-        for(int i = 0; i < outputGrad.values.length; i++){
+        for (int i = 0; i < outputGrad.values.length; i++) {
             Tensor newGrads = recentInput.product(outputGrad.values[i]);
 
             weightGrad = (weightGrad == null) ? newGrads : weightGrad.appendTensor(newGrads, weights.dimSizes.length);
@@ -57,8 +57,8 @@ public class Layer_FullyConnected implements Layer {
         //derivative of loss wrt inputs = weights * deriv wrt bias output
         Tensor inputGrad = new Tensor(expectedInputSizes);
         Tensor.RegionsIterator j = weights.new RegionsIterator(expectedInputSizes, new int[0]);
-        while(j.hasNext()){
-            Tensor newGrads = j.next().product(outputGrad.values[j.coordIterator.getCurrentCount()-1]);
+        while (j.hasNext()) {
+            Tensor newGrads = j.next().product(outputGrad.values[j.coordIterator.getCurrentCount() - 1]);
 
             inputGrad = inputGrad.add(newGrads, 1);
         }
